@@ -48,9 +48,11 @@ the seed (students who already opened it keep their local copy).
 
 ## Adapting each notebook for JupyterLite (checklist)
 
-1. **Interactive plots:** the install cell must run **before anything imports
-   matplotlib** (once matplotlib is imported, the widget backend can't register
-   until kernel restart). Standard header, first two cells of every notebook:
+1. **Interactive plots:** the install cell must run **before any code cell
+   that imports matplotlib** (once matplotlib is imported, the widget backend
+   can't register until kernel restart). Will's convention: the notebook's
+   opening markdown/title cell stays first — markdown doesn't affect this —
+   then these two code cells, then the usual imports:
    ```
    %pip install -q ipympl
    ```
@@ -142,6 +144,38 @@ or backend name" — the backend list is frozen at first matplotlib import;
 the install cell must be re-run after every restart. It's instant (wheels are
 served from the course site) — but "restart, then run from the top" is the
 reflex to drill, and it fixes this error every time.
+
+## Semester watch list (from the August 2026 notebook audit)
+
+- **Week 4 prep (biggest):** MECLib version gap — 2024 `MECLib.py` lacks
+  `SaveMyScenario`, `LoadMyScenario`, `CS_list_plots`, `CS_list_compare` that
+  the 2026 notebooks call, and `MakeEmissionsScenarioLTE` gained a 10th arg.
+  Get current source from Steven or add pickle-based versions. Also in the
+  2024 file: `import h5io` at top (install h5io or delete the line), a junk
+  `sys.path.append('/home')` self-import, a leaked `### END SOLUTION` marker
+  (~line 211), and `Diagnose_Delta_T_from_albedo` KeyErrors (underscore keys
+  vs the space-separated keys `CreateClimateParams` actually creates).
+- **Week 4:** create `content/ScenarioLibrary/` + fix `../../` → `../` paths
+  (9 notebooks). Generate fixture .pkls — `Peaks_in_2040_LTE.pkl` (weeks 6,
+  11, 13) doesn't exist yet; only `Peaks_in_2040.pkl` and `RCP4_5.pkl` do.
+- **Week 6:** delete `%matplotlib inline` from Cambio1.0 (kills the widget
+  backend). The hardcoded `index_of_2003` value is tied to the fixture's
+  time grid — regenerating .pkls with different `nsteps` silently breaks it
+  (wrong answers, not errors).
+- **Weeks 3/4c/7/10:** vendor the four `http://webspace.pugetsound.edu`
+  images (mixed content = blocked) + the two hotlinked HTTPS images in 10b.
+- **Weeks 10/13:** add `pint` to the install cell; warn students its first
+  import takes a few seconds (not hung).
+- **Week 11:** NOAA `https://gml.noaa.gov` downloads fail in-browser (CORS).
+  Use the local `brw/` folder (17 MB, already next to the notebook) — but
+  reconcile years: notebook wants 2020–2025, folder has 1977–2000 + 2017–2021.
+- **Every week:** copy only the needed files into `content/` — source folders
+  contain hidden `.hdf5`/`.pkl` dotfiles, a 2.9 MB `.ClimateStats.ipynb` old
+  draft, `__pycache__`, checkpoints, `.DS_Store`. And remember several student
+  notebooks (04a, 11a, 11b, 13b) NameError on Restart-&-Run-All *by design*
+  until blanks are filled — word the closing instruction accordingly.
+- **Never regenerate student-facing .pkl files casually** — pickles are tied
+  to the (frozen) pandas version. Safe only because nothing gets upgraded.
 
 ## Local machinery reference
 
