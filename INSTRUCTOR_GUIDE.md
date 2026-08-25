@@ -37,6 +37,7 @@ the seed (students who already opened it keep their local copy).
 
 - **Local preview (identical to production):**
   ```bash
+  mkdir -p content   # git drops the dir entirely if it's empty
   ~/miniforge3/envs/chm345lite/bin/jupyter lite build --contents content --output-dir _output
   cd _output && ~/miniforge3/envs/chm345lite/bin/python -m http.server 8898
   ```
@@ -147,14 +148,15 @@ reflex to drill, and it fixes this error every time.
 
 ## Semester watch list (from the August 2026 notebook audit)
 
-- **Week 4 prep (biggest):** MECLib version gap — 2024 `MECLib.py` lacks
-  `SaveMyScenario`, `LoadMyScenario`, `CS_list_plots`, `CS_list_compare` that
-  the 2026 notebooks call, and `MakeEmissionsScenarioLTE` gained a 10th arg.
-  Get current source from Steven or add pickle-based versions. Also in the
-  2024 file: `import h5io` at top (install h5io or delete the line), a junk
-  `sys.path.append('/home')` self-import, a leaked `### END SOLUTION` marker
-  (~line 211), and `Diagnose_Delta_T_from_albedo` KeyErrors (underscore keys
-  vs the space-separated keys `CreateClimateParams` actually creates).
+- **Week 4 prep — MECLib: RESOLVED Aug 2026.** Steven's current `MECLib.py`
+  (in `~/Desktop/Past MEC materials/`) has every function the 2026 notebooks
+  call, is pickle-based (no h5io), and passed a full in-browser model run
+  (Cambio2, 599 steps). Before publishing it: strip the leaked
+  `### END SOLUTION` marker (~line 233). Known latent bug, not course-blocking:
+  `Diagnose_Delta_T_from_albedo` reads underscore-style keys
+  (`'albedo_sensitivity'`) that `CreateClimateParams` never creates (it uses
+  spaces) — KeyErrors if ever called; worth reporting to Steven. A few
+  functions lack docstrings (`run_Cambio`, `CS_list_plots`, `CS_list_compare`).
 - **Week 4:** create `content/ScenarioLibrary/` + fix `../../` → `../` paths
   (9 notebooks). Generate fixture .pkls — `Peaks_in_2040_LTE.pkl` (weeks 6,
   11, 13) doesn't exist yet; only `Peaks_in_2040.pkl` and `RCP4_5.pkl` do.
