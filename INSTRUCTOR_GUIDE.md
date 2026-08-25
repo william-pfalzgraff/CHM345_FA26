@@ -24,7 +24,15 @@ numpy 2.4.6, matplotlib 3.10.8, pandas 3.0.2, h5py 3.13.0).*
 
 1. Author/edit the week's notebook wherever you like (drafts stay OUT of this
    repo — everything in `content/` is world-readable the moment you push).
-2. When final, copy the week folder in: `content/Week_05a.WhateverItIs/`.
+   Steven's released student versions arrive cell-locked by nbgrader
+   (markdown uneditable); unlock before editing:
+   ```bash
+   python3 tools/unlock_notebook.py path/to/Notebook.ipynb
+   ```
+2. When final, copy the week folder in: `content/Week_05a.WhateverItIs/` —
+   **student files only.** Instructor/solution notebooks often live in the
+   same working folder; they must never come along. (`.gitignore` blocks any
+   `*instructor*.ipynb` as a backstop, but check what you copied.)
 3. Preview locally (see below), then:
    ```bash
    git add content/Week_05a.WhateverItIs

@@ -18,3 +18,4 @@ __pycache__/
 # (They live outside it entirely, but belt and suspenders.)
 *[Ii]nstructor version*
 *[Ii]nstructor_version*
+*[Ii]nstructor*.ipynb
