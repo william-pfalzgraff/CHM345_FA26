@@ -1,0 +1,20 @@
+# Build outputs
+_output/
+_prodcheck/
+dist/
+.cache/
+.jupyterlite.doit.db
+
+# Local smoke tests — never published, never committed
+tests/
+
+# macOS / Jupyter cruft
+.DS_Store
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+
+# Safety net: instructor materials must never enter this repo.
+# (They live outside it entirely, but belt and suspenders.)
+*[Ii]nstructor version*
+*[Ii]nstructor_version*
