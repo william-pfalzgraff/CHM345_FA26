@@ -25,7 +25,11 @@ jobs:
       - name: Install build stack
         run: pip install -r requirements.txt
       - name: Build the JupyterLite site
-        run: jupyter lite build --contents content --output-dir dist
+        # mkdir: git doesn't track empty dirs, so an empty course site
+        # (e.g. before week 1) would otherwise have no content/ at checkout
+        run: |
+          mkdir -p content
+          jupyter lite build --contents content --output-dir dist
       - name: Add robots.txt (keep site out of search engines)
         run: cp robots.txt dist/robots.txt
       - uses: actions/upload-pages-artifact@v3
