@@ -6,6 +6,7 @@ Course notebook site for CHM345, served as a [JupyterLite](https://jupyterlite.r
 - **`requirements.txt`** — the pinned build stack. Frozen for the semester; do not upgrade mid-course.
 - **`.github/workflows/deploy.yml`** — rebuilds and redeploys the site on every push to `main`.
 
-See `INSTRUCTOR_GUIDE.md` for the weekly publishing workflow.
+See `INSTRUCTOR_GUIDE.md` for the weekly publishing workflow (typeset
+LaTeX/PDF version in `docs/`).
 
 Only sanitized student versions of notebooks live in this repository.

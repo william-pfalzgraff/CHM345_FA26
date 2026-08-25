@@ -1,0 +1,272 @@
+% CHM345 JupyterLite Instructor Guide
+% Compile with: tectonic instructor_guide.tex
+% Keep in sync with ../INSTRUCTOR_GUIDE.md (the quick-reference copy).
+\documentclass[11pt]{article}
+
+\usepackage[margin=1.1in]{geometry}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{parskip}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{codebg}{gray}{0.94}
+\definecolor{rulegray}{gray}{0.55}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{rulegray},
+  framerule=0.3pt,
+  xleftmargin=6pt, xrightmargin=6pt,
+  aboveskip=8pt, belowskip=8pt,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false
+}
+\newcommand{\code}[1]{\texttt{\small #1}}
+
+\title{\textbf{CHM345: Modeling Earth's Climate}\\[4pt]
+       \Large JupyterLite Course Site --- Instructor Guide}
+\author{William Pfalzgraff}
+\date{Fall 2026 \\[2pt] \small last verified August 25, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\small
+Site: \url{https://william-pfalzgraff.github.io/CHM345_FA26/} \qquad
+Repository: \url{https://github.com/william-pfalzgraff/CHM345_FA26}
+\end{center}
+
+\noindent\emph{Verified against the pinned versions in \code{requirements.txt}:
+jupyterlite-core 0.8.3, jupyterlite-pyodide-kernel 0.8.5, ipympl 0.10.0.
+The Pyodide runtime ships numpy 2.4.6, matplotlib 3.10.8, pandas 3.0.2, h5py 3.13.0.}
+
+\section{How the site works (30-second model)}
+
+\begin{itemize}[itemsep=2pt]
+  \item \code{content/} \textbf{is} the students' file browser. On every push to
+    \code{main}, GitHub Actions rebuilds the site and deploys it. What students
+    open in their browser is a \emph{seed copy}; their edits live in their own
+    browser's storage, layered on top. Anything they haven't touched always
+    mirrors \code{content/}.
+  \item \textbf{A student's local copy shadows the seed.} Once someone opens a
+    notebook, pushing edits to that same file won't reach them. Publish a
+    \code{\_v2} filename to fix a notebook people have started.
+  \item The pinned \code{requirements.txt} freezes every version for the
+    semester. Do not upgrade anything until winter break.
+\end{itemize}
+
+\section{Weekly publishing rhythm}
+
+\begin{enumerate}[itemsep=2pt]
+  \item Author/edit the week's notebook wherever you like (drafts stay
+    \emph{out} of this repository --- everything in \code{content/} is
+    world-readable the moment you push).
+  \item When final, copy the week folder in:
+    \code{content/Week\_05a.WhateverItIs/}.
+  \item Preview locally (Section~\ref{sec:preview}), then:
+\begin{lstlisting}
+git add content/Week_05a.WhateverItIs
+git commit -m "Publish week 5a"
+git push
+\end{lstlisting}
+  \item About two minutes later it's live. Verify \textbf{in a private/incognito
+    window} --- incognito always shows exactly what's published, with no local
+    shadow.
+\end{enumerate}
+
+To \emph{unpublish}: \code{git rm -r content/<folder>}, commit, push. It
+vanishes from the seed (students who already opened it keep their local copy).
+
+\section{Previewing and iterating}\label{sec:preview}
+
+\textbf{Local preview (identical to production):}
+\begin{lstlisting}
+mkdir -p content   # git drops the dir entirely if it's empty
+~/miniforge3/envs/chm345lite/bin/jupyter lite build --contents content --output-dir _output
+cd _output && ~/miniforge3/envs/chm345lite/bin/python -m http.server 8898
+\end{lstlisting}
+then open \url{http://127.0.0.1:8898} --- same Pyodide, same wheels, same
+everything.
+
+\textbf{On the live site:} iterate freely \emph{before} sharing the link. Test
+in incognito each time, or delete your local copy of the file in the
+JupyterLite file browser (that restores the fresh seed). The ``can't update an
+opened notebook'' rule is per-browser-profile, not global.
+
+\section{Adapting each notebook for JupyterLite (checklist)}
+
+\begin{enumerate}[itemsep=4pt]
+  \item \textbf{Interactive plots:} the install cell must run \textbf{before
+    any code cell that imports matplotlib} (once matplotlib is imported, the
+    widget backend can't register until kernel restart). Convention: the
+    notebook's opening markdown/title cell stays first --- markdown doesn't
+    affect this --- then these two code cells, then the usual imports:
+\begin{lstlisting}
+%pip install -q ipympl
+\end{lstlisting}
+\begin{lstlisting}
+%matplotlib widget
+import numpy as np
+import matplotlib.pyplot as plt
+...
+\end{lstlisting}
+    Wheels are bundled in the site (\code{pypi/}), so \code{\%pip install}
+    works offline and always gets the pinned version. Delete any
+    \code{\%matplotlib inline} lines.
+  \item \textbf{MECLib weeks:} copy \code{MECLib.py} into that week's folder
+    (visible to students, same folder as the notebook) and change the
+    collaborator's \code{import meclib.cl as cl} to \code{import MECLib as cl}.
+  \item \textbf{Scenario files:} notebooks reference
+    \code{../../ScenarioLibrary/\ldots}, which escapes the student drive. Keep
+    a \code{ScenarioLibrary/} folder at the \code{content/} root and change
+    paths to \code{../ScenarioLibrary/\ldots}. Ship pre-built \code{.pkl}
+    fixtures for later weeks so a student who lost their Week-4 output isn't
+    stuck. (Verified: the existing course \code{.pkl} files load fine in
+    Pyodide.)
+  \item \textbf{Week 11 (ClimateStats):} the NOAA
+    \code{https://gml.noaa.gov/\ldots} downloads will \emph{not} work in the
+    browser (CORS). Use the local \code{brw/} data folder that already exists
+    next to the notebook and point \code{pd.read\_csv} at
+    \code{brw/met\_brw\_insitu\_1\_obop\_hour\_YYYY.txt}. The folder has
+    1977--2000 and 2017--2021; the notebook currently asks for 2020--2025 ---
+    reconcile the years.
+  \item \textbf{Images:} \code{http://} images (webspace.pugetsound.edu) are
+    blocked on an HTTPS site. Save them into the week folder and use relative
+    paths.
+  \item \textbf{HDF5:} works for arrays/scalars (h5py, h5io). One limitation:
+    reading \emph{DataFrames stored inside} HDF5 (the 2024 scenario format)
+    needs pytables, which Pyodide doesn't have. Use pickle for anything with a
+    DataFrame --- which is what the 2026 notebooks already do.
+\end{enumerate}
+
+\section{Hard rules}
+
+\begin{itemize}[itemsep=2pt]
+  \item \textbf{Never} put instructor/solution notebooks anywhere in this
+    repository. The \code{.gitignore} blocks \code{*instructor version*} paths
+    as a backstop, but the real rule is: solutions live outside
+    \code{\textasciitilde/Desktop/Courses/CHM345/JupyterLite} entirely.
+  \item Don't push half-finished notebooks to \code{main} --- pushing =
+    publishing.
+  \item Don't change \code{requirements.txt} or \code{pypi/*.whl} mid-semester.
+\end{itemize}
+
+\section{Student-facing habits --- the week-1 talk}
+
+\textbf{Where your work lives.} Student edits are stored by the browser
+(IndexedDB), keyed to the site address. Their ``Jupyter'' is: \emph{same
+computer + same browser + same profile}. Within that combination, work
+persists indefinitely --- across closed tabs, restarts, and weeks away.
+
+\textbf{What wipes or ``loses'' work --- warn students explicitly:}
+\begin{itemize}[itemsep=2pt]
+  \item \textbf{Clearing browsing data.} Strictly it's ``cookies and site
+    data'' (not the image cache) that deletes work, but students won't
+    distinguish --- treat any clear-my-browser action as fatal to
+    unsaved-elsewhere work.
+  \item \textbf{Switching browser, profile, or computer} --- work doesn't
+    follow. It's not deleted (it's still in the original browser), but they'll
+    see a fresh copy and panic. Lab machines that reset profiles on logout
+    lose work every time --- students on lab computers \emph{must} download at
+    the end of each session.
+  \item \textbf{Safari auto-evicts} site storage after about 7 days without a
+    visit. Weekly class use mostly protects them; a break doesn't. Recommend
+    Chrome or Firefox.
+  \item \textbf{Nearly-full disks} can trigger the browser to evict site
+    storage.
+  \item \textbf{Incognito/private windows:} everything evaporates when the
+    window closes. Say it explicitly: \emph{never do coursework in a private
+    window.}
+  \item Deleting a file in the Jupyter file browser resets that file to the
+    published version (this is also the fix if they've mangled a notebook and
+    want a fresh start).
+\end{itemize}
+
+\textbf{The safety net: download your notebook at the end of every session.}
+This is self-enforcing here, since submitting to Gradescope requires
+downloading --- every submission doubles as an off-browser backup. Recovery is
+the Upload button. A system-check cell that verifies file storage is active
+(\code{os.getcwd()} starts with \code{/drive}) is in
+\code{tests/smoke/Welcome.ipynb} --- paste it into your own week-1 notebook;
+run it if anyone's saves vanish.
+
+\textbf{If plots or \code{\%matplotlib widget} misbehave:} Kernel
+$\rightarrow$ Restart, then \textbf{Run All} (not ``continue where you
+were''). Two things students should understand: (1) if matplotlib gets
+imported before the \code{\%pip install -q ipympl} cell has run,
+\code{\%matplotlib widget} errors with ``\,`widget' is not a recognised GUI
+loop or backend name'' --- the backend list is frozen at first matplotlib
+import; (2) restarting wipes \code{\%pip}-installed packages along with
+everything else, so the install cell must be re-run after every restart. It's
+instant (wheels are served from the course site) --- but ``restart, then run
+from the top'' is the reflex to drill, and it fixes this error every time.
+
+\section{Semester watch list (from the August 2026 notebook audit)}
+
+\begin{itemize}[itemsep=4pt]
+  \item \textbf{Week 4 prep --- MECLib: resolved August 2026.} Steven's
+    current \code{MECLib.py} (in
+    \code{\textasciitilde/Desktop/Past MEC materials/}) has every function the
+    2026 notebooks call, is pickle-based (no h5io), and passed a full
+    in-browser model run (Cambio2, 599 steps). Before publishing it: strip the
+    leaked \code{\#\#\# END SOLUTION} marker (near line 233). Known latent
+    bug, not course-blocking: \code{Diagnose\_Delta\_T\_from\_albedo} reads
+    underscore-style keys (\code{'albedo\_sensitivity'}) that
+    \code{CreateClimateParams} never creates (it uses spaces) --- KeyErrors if
+    ever called; worth reporting to Steven. A few functions lack docstrings
+    (\code{run\_Cambio}, \code{CS\_list\_plots}, \code{CS\_list\_compare}).
+  \item \textbf{Week 4:} create \code{content/ScenarioLibrary/} and fix
+    \code{../../} $\rightarrow$ \code{../} paths (9 notebooks). Generate
+    fixture pickles --- \code{Peaks\_in\_2040\_LTE.pkl} (weeks 6, 11, 13)
+    doesn't exist yet; only \code{Peaks\_in\_2040.pkl} and \code{RCP4\_5.pkl}
+    do.
+  \item \textbf{Week 6:} delete \code{\%matplotlib inline} from Cambio1.0
+    (kills the widget backend). The hardcoded \code{index\_of\_2003} value is
+    tied to the fixture's time grid --- regenerating pickles with a different
+    \code{nsteps} silently breaks it (wrong answers, not errors).
+  \item \textbf{Weeks 3/4c/7/10:} vendor the four
+    \code{http://webspace.pugetsound.edu} images (mixed content = blocked)
+    plus the two hotlinked HTTPS images in Week 10b.
+  \item \textbf{Weeks 10/13:} add \code{pint} to the install cell; warn
+    students its first import takes a few seconds (not hung).
+  \item \textbf{Week 11:} NOAA downloads fail in-browser (CORS). Use the local
+    \code{brw/} folder (17\,MB, already next to the notebook) --- but
+    reconcile years: notebook wants 2020--2025, folder has 1977--2000 and
+    2017--2021.
+  \item \textbf{Every week:} copy only the needed files into \code{content/}
+    --- source folders contain hidden \code{.hdf5}/\code{.pkl} dotfiles, a
+    2.9\,MB \code{.ClimateStats.ipynb} old draft, \code{\_\_pycache\_\_},
+    checkpoints, \code{.DS\_Store}. And remember several student notebooks
+    (04a, 11a, 11b, 13b) NameError on Restart-\&-Run-All \emph{by design}
+    until blanks are filled --- word the closing instruction accordingly.
+  \item \textbf{Never regenerate student-facing pickle files casually} ---
+    pickles are tied to the (frozen) pandas version. Safe only because nothing
+    gets upgraded.
+\end{itemize}
+
+\section{Local machinery reference}
+
+\begin{itemize}[itemsep=2pt]
+  \item Build environment: conda env \code{chm345lite}
+    (\code{\textasciitilde/miniforge3/envs/chm345lite}).
+  \item \code{tests/smoke/} (gitignored): \code{SmokeTest.ipynb} runs eleven
+    automated checks --- including a full MECLib model run --- and prints
+    \code{SMOKE\_OK}; \code{MiniTest.ipynb} is the minimal widget-pattern
+    test. Build with \code{--contents content --contents tests/smoke} to
+    include them locally; the deploy workflow builds \code{--contents content}
+    only, so they can never reach the public site.
+  \item This document: \code{docs/instructor\_guide.tex}, compiled with
+    \code{tectonic instructor\_guide.tex}. A plain-text quick reference lives
+    at the repository root (\code{INSTRUCTOR\_GUIDE.md}); when one changes,
+    update the other.
+\end{itemize}
+
+\end{document}

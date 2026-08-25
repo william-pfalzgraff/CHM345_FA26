@@ -1,5 +1,9 @@
 # CHM345_FA26 JupyterLite — Instructor Guide
 
+> A typeset version of this guide lives in `docs/` (`instructor_guide.tex`,
+> compiled to PDF with `tectonic`) — nicer for printing or sharing with
+> colleagues. When editing one, update the other.
+
 *Last verified 2026-08-24 against the pinned versions in `requirements.txt`
 (jupyterlite-core 0.8.3, pyodide-kernel 0.8.5, ipympl 0.10.0; Pyodide ships
 numpy 2.4.6, matplotlib 3.10.8, pandas 3.0.2, h5py 3.13.0).*
